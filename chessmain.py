@@ -1,9 +1,12 @@
-#CHESS GAME, FULLY WORKING
-
+#Chess Game
 
 
 import turtle as trtl
 wn = trtl.Screen()
+
+root = wn.getcanvas().winfo_toplevel()
+root.state("zoomed")
+
 #sets the colors of the board
 even_color="gray"
 odd_color="red"
@@ -44,13 +47,13 @@ def create_board():
 
     #tracer
     wn.tracer(False)
-    for blank in range(8):
+    for _ in range(8):
         #each time a new column is created
         square_x+=60
         square_y=210
         #to get the alternating color look
         square_counter+=1
-        for blank in range(8):
+        for _ in range(8):
             #creating square
             square=trtl.Turtle(shape="square")
             square.penup()
@@ -103,9 +106,6 @@ def create_pieces_start():
     piece_x=-210
     piece_y=-210
 
-
-    #actually creating the pieces, not pawns
-
     #get all of the files
     for piece_list in piece_turtles:
         for piece in piece_list:
@@ -129,7 +129,7 @@ def create_pieces_start():
     pawn_shapes=["white_pawn.gif","black_pawn.gif"]
     for pawn in pawn_shapes:
         #repeat 8 times
-        for blank in range(8):
+        for _ in range(8):
             #create the turtle
             pawnTurtle=trtl.Turtle(shape=pawn)
             #go to position
@@ -146,8 +146,8 @@ def create_pieces_start():
 def get_pieces():
     #setting new list to blank
     piece_name_list=[]
-    file=open("chesslocations.txt", "r")
-    for value in file:
+    boardfile=open("chesslocations.txt", "r")
+    for value in boardfile:
          #set index to 0, name to none, for each new piece
         piece_name=""
         index=0
@@ -166,8 +166,8 @@ def get_locations():
 
 
     #open file
-    file=open("chesslocations.txt", "r")
-    for value in file:
+    boardfile=open("chesslocations.txt", "r")
+    for value in boardfile:
         #iterate through letters on the file
         index=0
         piece_cords=""
@@ -214,12 +214,12 @@ def determine_cords(xvalue,yvalue):
                 if isx == True:
                     #x_onboard is the x cord on board
                     x_onboard=index+1
-                    #this variable below is teh canvas cord of the center of the square clicked
+                    #this variable below is the canvas cord of the center of the square clicked
                     x_click_middle_square=starting_value+30
                     break
                 #isx is False if we are checking the y value
                 if isx == False:
-                    #indentical variables as above, but for y value
+                    #identical variables as above, but for y value
                     y_onboard=index+1
                     y_click_middle_square=starting_value+30
                     break
@@ -234,9 +234,9 @@ def determine_cords(xvalue,yvalue):
 
 #this is called after every click
 #this function understands clicks on pieces, requested moves
-#restart game requests, checkmate checkig requests, every click possible
+#restart game requests, checkmate checking requests, every click possible
 def understand_request(x,y):
-    #get global varibales
+    #get global variables
     global retry_button_current
     global piece_click_loc_board
     global piece_click_loc_canvas
@@ -266,8 +266,8 @@ def understand_request(x,y):
     #figure out where was clicked, on the board and middle square
     click_cords=(determine_cords(x,y))
 
-    #to avoid errors for when the click is off the board
-    if click_cords == None:
+    #ignore clicks outside of board
+    if click_cords is None:
         clear_all_grays()
         return None
 
@@ -278,7 +278,7 @@ def understand_request(x,y):
     click_cords_board_unformatted=[click_cords[0],click_cords[1]]
     click_cords_canvas=[click_cords[2],click_cords[3]]
 
-    #format previously dtermined cords correctly
+    #format previously determined cords correctly
     xcord=click_cords_board_unformatted[0]
     ycord=click_cords_board_unformatted[1]
     click_cords_board=(str(xcord)+str(ycord))
@@ -293,7 +293,7 @@ def understand_request(x,y):
 
     #checks for move
     if check_forgrayclick(click_cords_canvas) == True:
-        #function, that calls other functions to initiate what happens on a move
+        #process requested move
         on_move_request(click_cords_canvas,click_cords_board)
 
 
@@ -391,12 +391,12 @@ def on_gray_request(click_cords_board,click_cords_canvas):
         #get the legal moves, compared to the possible moves
         legalgrays=get_legalmoves(eligible_grays,color_and_name,click_cords_board)
 
-        #adding castiling for clicking on kings
+        #adding castling for clicking on kings
         if color_and_name[0] == "king":
-            #determine the castling squarees
+            #determine the castling squares
             castling_squares=determine_castling_eligibility(color_and_name[1],click_cords_board)
             #if they can castle, add the castling squares
-            if castling_squares != None:
+            if castling_squares is not None:
                 for square in castling_squares:
                     legalgrays.append(square)
 
@@ -409,7 +409,7 @@ def on_gray_request(click_cords_board,click_cords_canvas):
 
 
         #if there is any spot for the piece to move
-        if eligible_grays != None:
+        if eligible_grays is not None:
             #legalgrays is formatted like [[3,3],[3,4]], which are the board cords
             #we need canvas cords, so we can direct the grays where to go using turtles canvas
             #graylocations_canvas will be legalgrays, but in canvas cord form
@@ -466,7 +466,7 @@ def make_movedpiece(location_goto,click_cords_board):
         if en_passant_format_ccb not in en_p_grays_b:
             en_p_grays_b=[]
             en_p_pawnlocs_b=[]
-        #only for pawn, to add en passant in, must indentify the times a pawn moves 2 squares
+        #only for pawn, to add en passant in, must identify the times a pawn moves 2 squares
         note_en_passant(location_goto,piece_click_loc_canvas,color,click_cords_board)
         #identifies an en passant capture
         identify_en_passant(location_goto)
@@ -476,48 +476,47 @@ def make_movedpiece(location_goto,click_cords_board):
             #identify when they have reached a promotion
             if cords_board[1] == 8:
                 create_options_promotion(color,location_goto)
-                file="white_pawn.gif"
+                piece_filename="white_pawn.gif"
             else:
-                file="white_pawn.gif"
+                piece_filename="white_pawn.gif"
 
 
         else:
             if cords_board[1] == 1:
                 create_options_promotion(color,location_goto)
-                file="black_pawn.gif"
-            file="black_pawn.gif"
+            piece_filename="black_pawn.gif"
        
    
     if name == "rook":
         if color == "white":
-            file="white_rook.gif"
+            piece_filename="white_rook.gif"
         else:
-            file="black_rook.gif"
+            piece_filename="black_rook.gif"
     if name == "knight":
         if color == "white":
-            file="white_knight.gif"
+            piece_filename="white_knight.gif"
         else:
-            file="black_knight_smiley.gif"
+            piece_filename="black_knight_smiley.gif"
     if name == "bishop":
         if color == "white":
-            file="white_bishop.gif"
+            piece_filename="white_bishop.gif"
         else:
-            file="black_bishop.gif"
+            piece_filename="black_bishop.gif"
     if name == "queen":
         if color == "white":
-            file="white_queen.gif"
+            piece_filename="white_queen.gif"
         else:
-            file="black_queen.gif"
+            piece_filename="black_queen.gif"
     if name == "king":
         if color == "white":
-            file="white_king.gif"
+            piece_filename="white_king.gif"
         else:
-            file="black_king.gif"
+            piece_filename="black_king.gif"
 
 
 
     #make turtle visible in correct spot
-    piece_turtle=trtl.Turtle(shape=file)
+    piece_turtle=trtl.Turtle(shape=piece_filename)
     piece_turtle.goto(location_goto)
     piece_turtle.stamp()
 
@@ -572,7 +571,7 @@ def update_file(new_loc_unformatted,promotion=False):
     #if the move is an en passant capturing white
     if en_p_white == True:
         update_game_enpassant("white",new_loc,locations_list,names_list,new_loc_canvas)
-        #resets, so this if statement will onyl evaluate to true on another en passant
+        #resets, so this if statement will only evaluate to true on another en passant
         en_p_white=False
     #same thing, for black        
     if en_p_black == True:
@@ -628,14 +627,14 @@ def add_square_aftermove(en_passant_addsquareloc=False,pawn_promote=False):
     square.shapesize(3)
     #set variables
     square_loc_canvas=piece_click_loc_canvas[0],piece_click_loc_canvas[1]
-    square_loc_board=piece_click_loc_board[0],piece_click_loc_board[1]
+    location=piece_click_loc_board[0],piece_click_loc_board[1]
 
 
 
     #check to see if the move is a king move that prevents a castle, and updates variables accordingly
-    if square_loc_board == ("5","1"):
+    if location == ("5","1"):
         wking_move=True
-    if square_loc_board == ("5","8"):
+    if location == ("5","8"):
         bking_move=True
     
         
@@ -644,8 +643,8 @@ def add_square_aftermove(en_passant_addsquareloc=False,pawn_promote=False):
     if en_passant_addsquareloc != False:
         #change variables of square loc on board and canvas
         square_loc_canvas=en_passant_addsquareloc
-        sqaure_loc_board_unformatted=determine_cords(square_loc_canvas[0],square_loc_canvas[1])
-        square_loc_board=sqaure_loc_board_unformatted[0],sqaure_loc_board_unformatted[1]
+        unformatted_location=determine_cords(square_loc_canvas[0],square_loc_canvas[1])
+        location=unformatted_location[0],unformatted_location[1]
 
 
 
@@ -653,14 +652,14 @@ def add_square_aftermove(en_passant_addsquareloc=False,pawn_promote=False):
     if pawn_promote != False:
         #change variables
         square_loc_canvas=pawn_promote
-        sqaure_loc_board_unformatted=determine_cords(square_loc_canvas[0],square_loc_canvas[1])
-        square_loc_board=sqaure_loc_board_unformatted[0],sqaure_loc_board_unformatted[1]
+        unformatted_location=determine_cords(square_loc_canvas[0],square_loc_canvas[1])
+        location=unformatted_location[0],unformatted_location[1]
 
 
 
 
     #determine square color
-    if (int(square_loc_board[0]) + int(square_loc_board[1])) % 2 == 0:
+    if (int(location[0]) + int(location[1])) % 2 == 0:
         squarecolor=even_color
     else:
         squarecolor=odd_color
@@ -675,12 +674,12 @@ def add_square_aftermove(en_passant_addsquareloc=False,pawn_promote=False):
 
 #get [king,white] from w_king, or similar
 def determine_name_and_color(name):
-    #detemine color
+    #determine color
     if name[0] == "w":
         color="white"
     else:
         color="black"
-    #detemine piece
+    #determine piece
     piece_name=""
     counter=0
     #for every letter..
@@ -717,7 +716,6 @@ def determine_ifturn():
 
 
 
-#LONG FUNCTION
 #determines the spaces a piece can move, must check for every piece individually
 def determine_spaces(name,color,location_click_board):
     
@@ -918,7 +916,7 @@ def determine_spaces(name,color,location_click_board):
                     if determine_ifpossible_move(move[0],move[1],color) == "take":
                         #tell the code to never check that direction again
                         movements_jumping_list_rook[iteration_index]=False
-                #if you cant move there
+                #if you can't move there
                 else:
                     #never check that direction
                     movements_jumping_list_rook[iteration_index]=False
@@ -953,7 +951,7 @@ def determine_spaces(name,color,location_click_board):
                     if determine_ifpossible_move(move[0],move[1],color) == "take":
                         #tell the code to never check that direction again
                         movements_jumping_list_bishop[iteration_index]=False
-                #if you cant move there
+                #if you can't move there
                 else:
                     #never check that direction
                     movements_jumping_list_bishop[iteration_index]=False
@@ -970,10 +968,10 @@ def determine_spaces(name,color,location_click_board):
             real_grays=[]
             
             #iterate through all the moves
-            for not_real_move_yet in eligible_grays:
+            for potential_move in eligible_grays:
                 #only append when there is no same color piece there
-                if determine_ifpossible_move(not_real_move_yet[0],not_real_move_yet[1],color) != False:
-                    real_grays.append(not_real_move_yet)
+                if determine_ifpossible_move(potential_move[0],potential_move[1],color) != False:
+                    real_grays.append(potential_move)
             return real_grays
 
         else:
@@ -1061,7 +1059,7 @@ def determine_castling_eligibility(color,kingloc):
         #variable for updating file for later
         color_andname_fileformatted="w_king"
         #check_forcheck takes opposite color of the king you need to check for check on
-        oppocolor="black"
+        opposite_color="black"
     
     #same for black
     else:
@@ -1069,7 +1067,7 @@ def determine_castling_eligibility(color,kingloc):
         right_rookmove=ur_rookmove
         king_move=bking_move
         color_andname_fileformatted="b_king"
-        oppocolor="white"
+        opposite_color="white"
 
 
     #if the king has moved, end the function
@@ -1077,7 +1075,7 @@ def determine_castling_eligibility(color,kingloc):
         return None
 
     #end the function if the king is in check currently
-    if check_forcheck(oppocolor) == True:
+    if check_forcheck(opposite_color) == True:
         return None
 
 
@@ -1117,7 +1115,7 @@ def determine_castling_eligibility(color,kingloc):
             difference=1
 
         #check for each space the castle will involve
-        for blank in range(loopingnum):
+        for _ in range(loopingnum):
             #add to the piece distance
             piece_distance+=difference
 
@@ -1133,7 +1131,7 @@ def determine_castling_eligibility(color,kingloc):
             update_file_check_forchecks(color_andname_fileformatted,kingloc,new_kingloc)
 
             #check for check on the king in this new spot, if true, we cannot castle there
-            if check_forcheck(oppocolor) == True:
+            if check_forcheck(opposite_color) == True:
                 #update the file back, given there is a check
                 update_file_check_forchecks(color_andname_fileformatted,new_kingloc,kingloc,resetting=True)
                 list_legaldirections.remove(direction)
@@ -1168,7 +1166,6 @@ def getrook_cords_castle(new_cords):
     old_cords=str(piece_click_loc_board[0])+str(piece_click_loc_board[1])
 
 
-    #get rid of errors
     if new_cords not in locs:
         return None
 
@@ -1181,7 +1178,7 @@ def getrook_cords_castle(new_cords):
     name=color_and_name[0]
     color=color_and_name[1]
 
-    #if we didnt click on a king, return nothing
+    #if we didn't click on a king, return nothing
     if name != "king":
         return None
     
@@ -1239,7 +1236,6 @@ def move_rook_oncastle(rookcords_list):
     #simulate a new move and past click, to move the rook
     global piece_click_loc_board,piece_click_loc_canvas
 
-    #what this does, it tells the code the past click was on the rook we are trying to castle with
     piece_click_loc_board=board_old_rook
     piece_click_loc_canvas=canvas_old_rook
 
@@ -1289,13 +1285,13 @@ def get_kinglocs():
 
 
 def check_forcheck_mate():
-    #get color of whoevers turn it is
+    #get color who's turn it is
     if determine_ifturn()=="white":
         color="white"
-        oppocolor="black"
+        opposite_color="black"
     else:
         color="black"
-        oppocolor="white"
+        opposite_color="white"
 
 
     #get all the moves of the color
@@ -1321,17 +1317,17 @@ def check_forcheck_mate():
 
     #for each value in the list of legal moves
     for moves in all_legalmoves:
-        #if ANY MOVE is not one of these two values
-        if moves != None and moves != []:
+        #if any piece is not legal, the game is over
+        if moves is not None and moves != []:
             #return false, there is no checkmate
             return False
 
     #if the code runs this, there are no moves
     #if the color is not in check, it is a stalemate
-    if check_forcheck(oppocolor) == False:
+    if check_forcheck(opposite_color) == False:
         return [None,"Stalemate, "]
     #if the color is in check, and has no moves, checkmate
-    return [oppocolor,"Checkmate! "]
+    return [opposite_color,"Checkmate! "]
 
 
 def check_for_insufficient_material(color_tobechecked):
@@ -1429,9 +1425,6 @@ def format_pieces_separatelists(color):
         counter+=1
            
     #every piece name, and the parallel location
-    #2 more, the same for black
-    #we need these because to determine a check, we need to understand every possible move
-    #and to understand every possible move, we need to know every piece, its color, and location
     return [namelist,loclist]
 
 
@@ -1462,8 +1455,8 @@ def update_file_check_forchecks(name_andcolor,old_loc_unformatted,new_loc_unform
         name=""
         #get list of names
         index=0
-        for blank in value:
-            #this should be true, until the numbers start, which we dont want included
+        for _ in value:
+            #extract piece name before comma
             if value[index] != ",":
                 name+=value[index]
                 index+=1
@@ -1480,8 +1473,7 @@ def update_file_check_forchecks(name_andcolor,old_loc_unformatted,new_loc_unform
         locs_list.append(location)
     
 
-    #if we are not resetting, we have to account for takes. If you have a possible take, that piece is temporarily removed. 
-    #We must fix that on the reset, but for now, just remember the piece identity
+    #temporarily taken piece, track details
     if resetting == False:
         #if this move is a take (or our new location is in the list), update the variables
         if new_loc in locs_list:
@@ -1518,7 +1510,7 @@ def update_file_check_forchecks(name_andcolor,old_loc_unformatted,new_loc_unform
 
 
 def get_legalmoves(moves,color_and_name,old_loc):
-    if moves == None:
+    if moves is None:
         return None
 
     #format color and name for updating file
@@ -1526,9 +1518,9 @@ def get_legalmoves(moves,color_and_name,old_loc):
 
     #get opposite color
     if determine_ifturn() == "white":
-        oppocolor="black"
+        opposite_color="black"
     else:
-        oppocolor="white"
+        opposite_color="white"
 
 
     #iterate through moves, and check for check
@@ -1536,8 +1528,8 @@ def get_legalmoves(moves,color_and_name,old_loc):
     for move in moves:
         #update file like we did that move
         update_file_check_forchecks(file_colorandname,old_loc,move)
-        #if theres no check, thats a legal move
-        if check_forcheck(oppocolor) == False:
+        #if there's no check, thats a legal move
+        if check_forcheck(opposite_color) == False:
             real_legalmoves.append(move)
         #update the file back
         update_file_check_forchecks(file_colorandname,move,old_loc,resetting=True)
@@ -1547,9 +1539,9 @@ def get_legalmoves(moves,color_and_name,old_loc):
    
 
 
-def check_forcheck(oppocolor):
+def check_forcheck(opposite_color):
     #get locations of every piece
-    pieces_lists=format_pieces_separatelists(oppocolor)
+    pieces_lists=format_pieces_separatelists(opposite_color)
     pieces_names=pieces_lists[0]
     pieces_locs=pieces_lists[1]
 
@@ -1559,7 +1551,7 @@ def check_forcheck(oppocolor):
     for index in range(len(pieces_names)):
         name=pieces_names[index]
         oldloc=pieces_locs[index]
-        piece_move=determine_spaces(name,oppocolor,oldloc)
+        piece_move=determine_spaces(name,opposite_color,oldloc)
         #append to list
         pieces_moves.append(piece_move)
 
@@ -1568,7 +1560,7 @@ def check_forcheck(oppocolor):
     both_kinglocs=get_kinglocs()
 
 
-    if oppocolor=="white":
+    if opposite_color=="white":
         current_kingloc=both_kinglocs[1]
     else:
         current_kingloc=both_kinglocs[0]
@@ -1577,7 +1569,7 @@ def check_forcheck(oppocolor):
     #get each individual list of piece moves
     for individual_piecemoves in pieces_moves:
         #if they have any moves
-        if individual_piecemoves != None:
+        if individual_piecemoves is not None:
             #if the king location is IN the list of moves
             if current_kingloc in individual_piecemoves:
                 #return true, because there is a check
@@ -1656,7 +1648,7 @@ def clear_all_grays():
 
 
 
-#indetify when a pawn moves up two squares, and append values to list for en passants
+#identify when a pawn moves up two squares, and append values to list for en passants
 def note_en_passant(new_loc,old_loc,color,new_board_loc):
     global en_p_pawnlocs_w,en_p_pawnlocs_b,en_p_grays_b,en_p_grays_w
     #if the pawn moved two squares in one turn
@@ -1794,7 +1786,7 @@ def initiate_pawnpromotion(xcord_click,ycord_click):
 
 
 def create_options_promotion(color,pawn_loc):
-    #variable for understand request function to understnad what is going on
+    #variable for understand request function to understand what is going on
     global pawn_promote_current_white,pawn_promote_current_black
 
     global spot_turtlelist
@@ -1850,7 +1842,7 @@ def create_options_promotion(color,pawn_loc):
     file_counter=0
     spot_turtlelist=[]
     for spot in spot_list:
-        #creates turtle, goes to the spot, detrmines correct shape
+        #creates turtle, goes to the spot, determines correct shape
         turtle=trtl.Turtle(shape="circle")
         turtle.shape(list_to_use[file_counter])
         turtle.goto(spot)
@@ -1982,7 +1974,7 @@ def create_gameover_backgroundscreen():
 
 
 def write_winning_text(color_winner,method_of_ending):
-    if color_winner == None:
+    if color_winner is None:
         color_winner = "Nobody"
     else:
         #turns color winner to White or Black instead of white/black
